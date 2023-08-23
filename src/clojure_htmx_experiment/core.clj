@@ -1,29 +1,29 @@
 (ns clojure-htmx-experiment.core
   (:require
    [clojure-htmx-experiment.app-state :refer [app-state]]
-   [clojure-htmx-experiment.ui.app :refer [app-frame]]
-   [clojure.core.async :as async]
-   ; [clojure.data.json :as json]
-   [clojure.java.io :as io]
+   [clojure-htmx-experiment.ui.app :refer [<app-frame>]]
+   [clojure-htmx-experiment.ui.button :refer [<button>]]
+   [clojure.core.async :as async] ; [clojure.data.json :as json]
+   ; [clojure.java.io :as io]
    [compojure.core :refer [defroutes GET POST]]
    [compojure.route :as route]
    [hiccup2.core :as h] ; [ring.adapter.jetty :refer [run-jetty]]
    [mount.core :as mount :refer [defstate]]
    [org.httpkit.server :refer [run-server]]
-   [ring.core.protocols :refer [StreamableResponseBody]]
+   ; [ring.core.protocols :refer [StreamableResponseBody]]
    [ring.middleware.defaults :refer [api-defaults site-defaults wrap-defaults]]))
 
-; taken from https://www.lucagrulla.com/posts/server-sent-events-with-ring-and-compojure/
-(extend-type clojure.core.async.impl.channels.ManyToManyChannel
-  StreamableResponseBody
-  (write-body-to-stream [channel _response output-stream]
-    (async/go (with-open [writer (io/writer output-stream)]
-                (async/loop []
-                  (when-let [msg (async/<! channel)]
-                    (doto writer (.write msg) (.flush))
-                    ; looks like kondo does understand that async/loop is a recur target
-                    #_{:clj-kondo/ignore [:invalid-arity]}
-                    (recur)))))))
+; ; taken from https://www.lucagrulla.com/posts/server-sent-events-with-ring-and-compojure/
+; (extend-type clojure.core.async.impl.channels.ManyToManyChannel
+;   StreamableResponseBody
+;   (write-body-to-stream [channel _response output-stream]
+;     (async/go (with-open [writer (io/writer output-stream)]
+;                 (async/loop []
+;                   (when-let [msg (async/<! channel)]
+;                     (doto writer (.write msg) (.flush))
+;                     ; looks like kondo does understand that async/loop is a recur target
+;                     #_{:clj-kondo/ignore [:invalid-arity]}
+;                     (recur)))))))
 
 ; (def stream-response
 ;   (partial
@@ -37,15 +37,17 @@
 ; (defn stream-msg [payload]
 ;   (str "data:" (json/write-str payload) EOL EOL))
 
-(declare chatroom-messages-ch)
-(defstate chatroom-messages-ch
-  :start (async/chan)
-  :stop (async/close! @chatroom-messages-ch))
+; (declare chatroom-messages-ch)
+; (defstate chatroom-messages-ch
+;   :start (async/chan)
+;   :stop (async/close! @chatroom-messages-ch))
 
 (defroutes app
-  (GET "/" [] (str (h/html app-frame)))
+  (GET "/" [] (str (h/html (<app-frame>))))
+  (GET "/current-time" [] (str (h/html (str (new java.util.Date)))))
   (GET "/chatroom-messages"
     [_req _res _raise]
+    :nope
     ; []
     ; "stream goes here"
     ; (res (stream-response @chatroom-messages-ch))
@@ -57,11 +59,8 @@
     []
     (do
       (swap! app-state update-in [:counter] inc)
-      #_(async/>! @chatroom-messages-ch
-                  (stream-msg
-                   (str "Received click no "
-                        (some-> @app-state :counter)))))
-    (route/not-found "<h1>Page not found</h1>")))
+      (str (h/html (<button>)))))
+  (route/not-found "<h1>Page not found</h1>"))
 
 ; (def site
 ;   (wrap-defaults app site-defaults))
