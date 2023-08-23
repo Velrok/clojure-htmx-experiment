@@ -2,5 +2,6 @@
 
 (defn <chat-room>
   []
-  [:div {:hx-ext :sse :sse-connect "/chatroom-messages" :sse-swap "message"}
-   "Loading messages..."])
+  ;; https://htmx.org/extensions/web-sockets/
+  [:div {:hx-ext :ws :ws-connect "/chatroom-messages"}
+   [:div#messages "Loading messages..."]])

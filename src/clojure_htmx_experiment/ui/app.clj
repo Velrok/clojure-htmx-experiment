@@ -10,11 +10,12 @@
    [:head]
    [:body
     [:script {:src "https://unpkg.com/htmx.org@1.9.4"}]
-    [:script {:src "https://unpkg.com/htmx.org/dist/ext/sse.js"}]
+    ; [:script {:src "https://unpkg.com/htmx.org/dist/ext/sse.js"}]
+    [:script {:src "https://unpkg.com/htmx.org/dist/ext/ws.js"}]
+
     [:h1 "Hello world 2"]
-    (<server-time>)
+    ; (<server-time>)
     (<button>)
 
-    ; [:h1 "Chat room"]
-    ; (<chat-room>)
-    ]])
+    [:h1 "Chat room"]
+    (<chat-room>)]])
